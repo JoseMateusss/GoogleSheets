@@ -1,0 +1,70 @@
+// Tudo aqui é programado em Apps Script
+// https://developers.google.com/apps-script
+
+// esta é a função que é disparada quando o aplicativo da web 
+// recebe um requisição do tipo GET 
+// Ex. Uma visita comum
+function doGet(e) {
+  return HtmlService.createHtmlOutput("request received");
+}
+
+// esta é a função que é disparada quando o aplicativo da web 
+// recebe um requisição do tipo POST
+// Ex. Quando o Elementor envia dados, é isso o que queremos
+function doPost(e) {
+  
+  // o Parâmetro "e" é um objeto de evento que contém todo o contexto e 
+  // informações necessárias para trabalharmos, é como se fosse uma
+  // caixinha que chega do correio com todas as informações de quem
+  // preencheu o formulário no nosso site
+  if(typeof e !== 'undefined')
+    // Salva todos os parâmetros na variável parametros
+    var parametros = e.parameter;
+    
+    
+  // Seleciona em qual página da planilha os dados deverão ser incluídos
+  // Esta página precisa existir
+  var planilha = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Leads");
+  
+  // Encontra a última linha já preenchida da página  
+  var ultimaLinha = Math.max(planilha.getLastRow(),1);
+  // Especificamos em qual linha vamos salvar os dados
+  // I.E. a linha que fica após a última linha já preenchida
+  var linhaAtual = ultimaLinha + 1;
+  
+  // Insere uma linha após a última linha encontrada
+  planilha.insertRowAfter(ultimaLinha);
+  
+ 
+  
+  
+  // Aqui vamos abrir aquela caixinha e separar tudo o que precisamos
+  // cada um em sua variável, note que no caso do 
+  // WhatsApp juntamos 2 campos independentes para 
+  // ter um número final
+  var nome = parametros.Nome;                                    // Ex. Alan Rezende
+  var whatsApp = parametros.DDD + " - " + parametros.WhatsApp;   // Ex. 12 - 997871706
+  var url = parametros["Page URL"];                              // Ex. https://alanrezende.com.br/blog
+  var dataAtual = new Date();                                    // Ex. 15/01/2020 18:00 será a data em que o sistema recebe os dados
+  var email = parametros.Email;                                  // Ex. alan@turbinabiz.com.br 
+  
+  // Vamos aplicar os valores das variáveis em suas respectivas 
+  // linhas e colunas, a linha é sempre a mesma: a última
+  // e as colunas são especificadas após a linha atual
+  planilha.getRange(linhaAtual, 2).setValue(dataAtual);    // Coluna 2
+  planilha.getRange(linhaAtual, 5).setValue(email);        // Coluna 5
+  planilha.getRange(linhaAtual, 3).setValue(nome);         // Coluna 3
+  planilha.getRange(linhaAtual, 4).setValue(whatsApp);     // Coluna 4
+  planilha.getRange(linhaAtual, 7).setValue(url);          // Coluna 7
+
+  
+  
+  // Até aqui as alterações estão com status pendente
+  // Na linha abaixo as alterações são aplicadas na planilha.
+  SpreadsheetApp.flush();
+  
+  // Retorna uma mensagem de sucesso para o remetente
+  return HtmlService.createHtmlOutput("Requisição recebida com sucesso!");
+  
+  
+}
